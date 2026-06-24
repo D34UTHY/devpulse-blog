@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Por que o Rust está conquistando o back-end em 2025 — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+
+  <!-- READING PROGRESS -->
+  <div class="reading-progress">
+    <div class="reading-progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="post.html" class="active">Posts</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <!-- POST HEADER -->
+  <header class="post-header reveal">
+    <div class="post-header-meta">
+      <span class="tag tag--orange">Rust</span>
+      <span class="tag tag--blue">Back-end</span>
+      <span class="tag tag--green">Performance</span>
+      <span class="meta-dot" style="color:var(--text-dim)">·</span>
+      <span class="read-time">8 min de leitura</span>
+    </div>
+
+    <h1 class="post-title">Por que o Rust está conquistando o back-end em 2025</h1>
+
+    <div class="post-author-bar">
+      <div class="avatar-md">RN</div>
+      <div class="author-bar-info">
+        <div class="author-bar-name">Rafael Nunes</div>
+        <div class="author-bar-role">Engenheiro de Software Sênior &nbsp;·&nbsp; 12 de junho de 2025</div>
+      </div>
+      <div class="author-bar-stats">
+        <span>👁 3.2k views</span>
+        <span>💬 28 comentários</span>
+        <span>🔖 142 saves</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- COVER -->
+  <div class="post-cover reveal">
+    <div class="post-cover-img">🦀</div>
+  </div>
+
+  <!-- POST BODY + TOC -->
+  <div class="post-layout">
+    <article class="post-body">
+
+      <p>Durante anos, o back-end foi dominado por Go, Java, Python e Node.js. Cada um com suas vantagens, cada um com seus trade-offs bem conhecidos. Mas desde 2023, algo mudou: <strong>Rust está aparecendo cada vez mais em sistemas de produção de empresas sérias</strong> — e não só nos "projetos de sistemas" tradicionais.</p>
+
+      <p>Discord reescreveu partes críticas do seu serviço de presença em Rust e reduziu uso de memória de 1GB para 64MB. Cloudflare usa Rust no processamento de requests das edges. O Linux Kernel passou a aceitar Rust como segunda linguagem oficial. O Chromium também.</p>
+
+      <div class="callout">
+        <span class="callout-icon">💡</span>
+        <p class="callout-text">Este artigo assume conhecimento básico de programação back-end. Não é necessário conhecer Rust previamente — vamos construir o entendimento do zero.</p>
+      </div>
+
+      <h2 id="problema">O problema que o Rust resolve</h2>
+
+      <p>Para entender o apelo do Rust, você precisa entender o trade-off clássico que existia antes dele:</p>
+
+      <ul>
+        <li><strong>Linguagens com GC</strong> (Java, Go, Python, Node.js): produtividade alta, performance média, segurança de memória garantida pelo Garbage Collector — mas com pausas imprevisíveis e overhead de memória.</li>
+        <li><strong>Linguagens sem GC</strong> (C, C++): performance máxima, controle total — mas com uma classe inteira de bugs devastadores: use-after-free, buffer overflow, data races em threads.</li>
+      </ul>
+
+      <p>Rust propõe uma terceira via: <strong>performance de C++ com segurança de memória garantida em tempo de compilação</strong>, sem GC e sem runtime overhead.</p>
+
+      <h2 id="ownership">O sistema de ownership</h2>
+
+      <p>O coração do Rust é o sistema de <em>ownership</em>. Em vez de um GC em runtime ou gerenciamento manual de memória, o compilador do Rust rastreia, em tempo de compilação, quem "possui" cada dado e quando esse dado deve ser desalocado.</p>
+
+      <pre><code><span class="cm">// Em outras linguagens, isso causaria use-after-free</span>
+<span class="cm">// Em Rust, o compilador rejeita isso em build time:</span>
+
+<span class="kw">let</span> s1 = String::from(<span class="str">"hello"</span>);
+<span class="kw">let</span> s2 = s1; <span class="cm">// ownership transferido para s2</span>
+
+<span class="cm">// Erro de compilação: s1 não existe mais</span>
+println!(<span class="str">"{}"</span>, s1); <span class="cm">// ← compile error: value borrowed after move</span>
+<span class="lang-label">rust</span></code></pre>
+
+      <p>Esse mecanismo — chamado de <em>borrow checker</em> — elimina toda uma categoria de bugs que custam milhões de dólares em patches de segurança por ano em projetos C/C++.</p>
+
+      <h2 id="benchmark">Performance: os números reais</h2>
+
+      <p>Benchmark apelativo não ajuda ninguém. Vamos olhar casos reais:</p>
+
+      <blockquote>
+        "Quando reescrevemos nosso serviço de Read States de Go para Rust, a latência p99 caiu de 5ms para 1ms, e o uso de memória caiu 10x. O resultado foi imediato em produção."
+        <br><br>— Discord Engineering Blog, 2020
+      </blockquote>
+
+      <p>A explicação técnica é direta: sem GC, <strong>não há stop-the-world pauses</strong>. Em sistemas de baixíssima latência (jogos, trading, serviços de presença em tempo real), essa previsibilidade é mais valiosa do que throughput médio alto.</p>
+
+      <h2 id="ecossistema">O ecossistema em 2025</h2>
+
+      <p>O maior obstáculo histórico do Rust era o ecossistema imaturo. Isso mudou. Os principais frameworks web estão estáveis e em uso em produção:</p>
+
+      <pre><code><span class="cm"># Cargo.toml — as dependências mais comuns em projetos web Rust</span>
+
+[dependencies]
+<span class="cls">axum</span>       = <span class="str">"0.7"</span>    <span class="cm"># framework web (tokio ecosystem)</span>
+<span class="cls">tokio</span>      = { version = <span class="str">"1"</span>, features = [<span class="str">"full"</span>] }
+<span class="cls">serde</span>      = { version = <span class="str">"1"</span>, features = [<span class="str">"derive"</span>] }
+<span class="cls">sqlx</span>       = { version = <span class="str">"0.7"</span>, features = [<span class="str">"postgres"</span>] }
+<span class="cls">tower</span>      = <span class="str">"0.4"</span>    <span class="cm"># middleware e abstrações de serviço</span>
+<span class="cls">tracing</span>    = <span class="str">"0.1"</span>    <span class="cm"># structured logging</span>
+<span class="lang-label">toml</span></code></pre>
+
+      <p>Com <code>axum</code> + <code>tokio</code>, escrever um servidor HTTP assíncrono em Rust ficou comparável à experiência de trabalhar com Fastify no Node.js — mas com tipagem mais forte e performance consideravelmente superior.</p>
+
+      <h2 id="quando-usar">Quando faz sentido usar?</h2>
+
+      <p>Rust não é bala de prata. A curva de aprendizado é real — leva semanas até o borrow checker parar de te frustrar. Mas faz muito sentido quando:</p>
+
+      <ul>
+        <li>Você precisa de <strong>latência ultra-baixa e previsível</strong> (p99 importa mais que média)</li>
+        <li>O serviço processa <strong>alto volume de dados</strong> e memória é um custo operacional relevante</li>
+        <li>Você está construindo <strong>infraestrutura de plataforma</strong> (proxies, parsers, serviços de rede)</li>
+        <li>Segurança de memória é um requisito crítico (fintech, sistemas embarcados, segurança)</li>
+      </ul>
+
+      <p>Para a maioria dos CRUD APIs e aplicações de negócio, Node.js, Go ou Python continuam sendo escolhas pragmaticamente superiores. O custo de onboarding de Rust raramente compensa nesses casos.</p>
+
+      <h2 id="conclusao">Conclusão</h2>
+
+      <p>Rust não veio para substituir Go ou Python. Veio preencher o espaço que antes era exclusivo de C++ — mas com uma developer experience muito mais civilizada e segurança de memória garantida pelo compilador.</p>
+
+      <p>Se você trabalha com sistemas de alta performance, infraestrutura ou serviços de baixa latência em produção, 2025 é um ótimo momento para investir seriamente no aprendizado de Rust. O ecossistema amadureceu, a comunidade cresceu, e as empresas estão contratando.</p>
+
+    </article>
+
+    <!-- TOC -->
+    <aside>
+      <nav class="toc">
+        <div class="toc-title">Neste artigo</div>
+        <ul class="toc-list">
+          <li><a href="#problema">O problema que Rust resolve</a></li>
+          <li><a href="#ownership">O sistema de ownership</a></li>
+          <li><a href="#benchmark">Performance: os números reais</a></li>
+          <li><a href="#ecossistema">O ecossistema em 2025</a></li>
+          <li><a href="#quando-usar">Quando faz sentido usar?</a></li>
+          <li><a href="#conclusao">Conclusão</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <!-- POST FOOTER -->
+  <div class="post-footer">
+    <div class="post-tags">
+      <span class="tag tag--orange">Rust</span>
+      <span class="tag tag--blue">Back-end</span>
+      <span class="tag tag--green">Performance</span>
+      <span class="tag tag--blue">Sistemas</span>
+      <span class="tag tag--pink">WebAssembly</span>
+    </div>
+
+    <div class="post-share">
+      <span class="share-label">Compartilhar</span>
+      <div class="share-btns">
+        <button class="share-btn">𝕏 Twitter</button>
+        <button class="share-btn">in LinkedIn</button>
+        <button class="share-btn">🔗 Copiar link</button>
+      </div>
+    </div>
+
+    <!-- Author Card -->
+    <div class="author-card reveal">
+      <div class="avatar-lg">RN</div>
+      <div>
+        <div class="author-card-name">Rafael Nunes</div>
+        <div class="author-card-role">// senior-software-engineer</div>
+        <p class="author-card-bio">Engenheiro de software com 9 anos de experiência em sistemas distribuídos e infraestrutura. Trabalhou em empresas como Nubank e Cloudflare. Escreve sobre Rust, Go e arquitetura de sistemas no DevPulse desde 2022.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATED POSTS -->
+  <section class="related-section">
+    <div class="section-header reveal">
+      <span class="section-title">// você também pode gostar</span>
+    </div>
+    <div class="related-grid">
+      <article class="post-card reveal" onclick="location.href='post.html'">
+        <div class="post-card-image">⚙️</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Docker vs Podman em 2025</h2>
+          <p class="post-card-excerpt">Qual container runtime escolher para seu workflow de desenvolvimento e produção?</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">5 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post.html'">
+        <div class="post-card-image">⚡</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--blue">TypeScript</span></div>
+          <h2 class="post-card-title">TypeScript 5.5: as features que importam</h2>
+          <p class="post-card-excerpt">Decorators estabilizados, inferência melhorada e muito mais no novo TypeScript.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">AM</div> Ana Mello</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">7 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post.html'">
+        <div class="post-card-image">🔐</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Segurança</span></div>
+          <h2 class="post-card-title">JWT não é suficiente</h2>
+          <p class="post-card-excerpt">Como implementar autenticação de verdade com refresh tokens e rotação segura.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">10 min</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="post.html">Últimos posts</a></li>
+          <li><a href="#">Tutoriais</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+          <li><a href="#">Autores</a></li>
+          <li><a href="#">Escreva para nós</a></li>
+          <li><a href="#">Patrocínio</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+          <li><a href="#">IA & LLMs</a></li>
+          <li><a href="#">Segurança</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+        <a href="#">RSS Feed</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>

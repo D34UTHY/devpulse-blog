@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevPulse — Tech & Programação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html" class="active">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <section class="hero reveal">
+    <div>
+      <div class="hero-featured-label">Post em destaque</div>
+      <h1>Por que o Rust está conquistando o back-end em 2025</h1>
+      <div class="hero-meta">
+        <span class="tag tag--orange">Rust</span>
+        <span class="tag tag--blue">Back-end</span>
+        <div class="meta-author">
+          <div class="avatar-sm">RN</div>
+          Rafael Nunes
+          <span class="meta-dot">·</span>
+          <span class="read-time">8 min</span>
+          <span class="meta-dot">·</span>
+          12 Jun 2025
+        </div>
+      </div>
+      <p class="hero-excerpt">A linguagem que prometia "zero-cost abstractions" e segurança de memória sem GC finalmente chegou à maturidade. Exploramos os motivos que estão levando grandes empresas a migrarem partes críticas de seus sistemas para Rust.</p>
+      <a href="post-rust-backend.html" class="hero-cta">Ler artigo completo →</a>
+    </div>
+    <div>
+      <div class="hero-image">
+        <div class="hero-image-placeholder">🦀</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trending-strip">
+    <div class="section-header reveal">
+      <span class="section-title">// em alta agora</span>
+    </div>
+    <div class="trending-grid">
+      <div class="trending-card reveal" onclick="location.href='post-typescript-55.html'">
+        <span class="trending-num">01</span>
+        <div class="trending-content">
+          <h4>TypeScript 5.5: as features que você precisa conhecer agora</h4>
+          <p><span class="tag tag--blue">TypeScript</span> &nbsp;·&nbsp; 7 min</p>
+        </div>
+      </div>
+      <div class="trending-card reveal" onclick="location.href='post-docker-podman.html'">
+        <span class="trending-num">02</span>
+        <div class="trending-content">
+          <h4>Docker vs Podman em 2025: qual usar no seu workflow?</h4>
+          <p><span class="tag tag--green">DevOps</span> &nbsp;·&nbsp; 5 min</p>
+        </div>
+      </div>
+      <div class="trending-card reveal" onclick="location.href='post-rag-langchain.html'">
+        <span class="trending-num">03</span>
+        <div class="trending-content">
+          <h4>Construindo um RAG do zero com LangChain e PostgreSQL</h4>
+          <p><span class="tag tag--purple">IA</span> &nbsp;·&nbsp; 15 min</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="main-wrapper">
+    <main>
+      <div class="section-header reveal">
+        <span class="section-title">// posts recentes</span>
+        <a href="categoria.html" class="section-link">Ver todos →</a>
+      </div>
+
+      <div class="posts-grid">
+        <article class="post-card reveal" data-category="front-end" onclick="location.href='post-typescript-55.html'">
+          <div class="post-card-image">⚡</div>
+          <div class="post-card-body">
+            <div class="post-card-tags">
+              <span class="tag tag--blue">TypeScript</span>
+              <span class="tag tag--pink">Node.js</span>
+            </div>
+            <h2 class="post-card-title">TypeScript 5.5: as features que você precisa conhecer agora</h2>
+            <p class="post-card-excerpt">O TypeScript continua evoluindo rápido. Nesta edição, decorators estabilizados, inferência melhorada de tipo em closures e muito mais que vai mudar como você escreve código.</p>
+            <div class="post-card-footer">
+              <div class="meta-author">
+                <div class="avatar-sm">AM</div>
+                Ana Mello &nbsp;·&nbsp; <span class="read-time">7 min</span>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">8 Jun</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card reveal" data-category="devops" onclick="location.href='post-kubernetes-devs.html'">
+          <div class="post-card-image">🐳</div>
+          <div class="post-card-body">
+            <div class="post-card-tags">
+              <span class="tag tag--green">DevOps</span>
+            </div>
+            <h2 class="post-card-title">Kubernetes para devs: do zero ao primeiro deploy em produção</h2>
+            <p class="post-card-excerpt">K8s tem fama de complexo, mas com a abordagem certa qualquer dev consegue subir sua aplicação em cluster sem precisar de uma semana de configuração.</p>
+            <div class="post-card-footer">
+              <div class="meta-author">
+                <div class="avatar-sm">LC</div>
+                Lucas Costa &nbsp;·&nbsp; <span class="read-time">12 min</span>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">5 Jun</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card reveal" data-category="ia" onclick="location.href='post-rag-langchain.html'">
+          <div class="post-card-image">🤖</div>
+          <div class="post-card-body">
+            <div class="post-card-tags">
+              <span class="tag tag--purple">IA</span>
+              <span class="tag tag--blue">Python</span>
+            </div>
+            <h2 class="post-card-title">Construindo um RAG do zero com LangChain e PostgreSQL</h2>
+            <p class="post-card-excerpt">RAG (Retrieval-Augmented Generation) é o padrão da indústria para LLMs com contexto customizado. Veja como implementar do zero com pgvector.</p>
+            <div class="post-card-footer">
+              <div class="meta-author">
+                <div class="avatar-sm">PF</div>
+                Paula Freitas &nbsp;·&nbsp; <span class="read-time">15 min</span>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">2 Jun</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="post-card reveal" data-category="seguranca" onclick="location.href='post-jwt-autenticacao.html'">
+          <div class="post-card-image">🔐</div>
+          <div class="post-card-body">
+            <div class="post-card-tags">
+              <span class="tag tag--orange">Segurança</span>
+            </div>
+            <h2 class="post-card-title">JWT não é suficiente: como implementar autenticação de verdade</h2>
+            <p class="post-card-excerpt">A maioria das implementações de JWT que vejo por aí têm falhas críticas de segurança. Vamos cobrir refresh tokens, rotação, revogação e proteção contra ataques reais.</p>
+            <div class="post-card-footer">
+              <div class="meta-author">
+                <div class="avatar-sm">RN</div>
+                Rafael Nunes &nbsp;·&nbsp; <span class="read-time">10 min</span>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">30 Mai</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <aside class="sidebar">
+      <div class="sidebar-widget newsletter-widget reveal">
+        <div class="widget-title">📬 Newsletter semanal</div>
+        <p class="newsletter-desc">Conteúdo técnico selecionado direto no seu e-mail. Sem spam, sem enrolação.</p>
+        <form onsubmit="return false">
+          <input type="email" class="newsletter-input" placeholder="seu@email.com">
+          <button type="submit" class="btn-full">Inscrever gratuitamente</button>
+        </form>
+        <p style="font-size:0.72rem;color:var(--text-dim);margin-top:0.5rem">+4.200 devs inscritos</p>
+      </div>
+
+      <div class="sidebar-widget reveal">
+        <div class="widget-title">📁 Categorias</div>
+        <div class="cat-list">
+          <a href="categoria.html" class="cat-item">
+            <span>⚡ TypeScript</span>
+            <span class="cat-count">24</span>
+          </a>
+          <a href="categoria.html" class="cat-item">
+            <span>🐳 DevOps</span>
+            <span class="cat-count">18</span>
+          </a>
+          <a href="categoria.html" class="cat-item">
+            <span>🤖 Inteligência Artificial</span>
+            <span class="cat-count">15</span>
+          </a>
+          <a href="categoria.html" class="cat-item">
+            <span>🦀 Rust</span>
+            <span class="cat-count">11</span>
+          </a>
+          <a href="categoria.html" class="cat-item">
+            <span>🔐 Segurança</span>
+            <span class="cat-count">9</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget reveal">
+        <div class="widget-title">📊 DevPulse em números</div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span class="stat-box-num">142</span>
+            <span class="stat-box-label">Artigos</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box-num">4.2k</span>
+            <span class="stat-box-label">Inscritos</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box-num">38k</span>
+            <span class="stat-box-label">Leitores/mês</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box-num">3</span>
+            <span class="stat-box-label">Autores</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-widget reveal">
+        <div class="widget-title">🏷️ Tags populares</div>
+        <div class="tags-cloud">
+          <span class="tag tag--blue">React</span>
+          <span class="tag tag--pink">Node.js</span>
+          <span class="tag tag--orange">Rust</span>
+          <span class="tag tag--green">Docker</span>
+          <span class="tag tag--purple">Python</span>
+          <span class="tag tag--blue">TypeScript</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <section class="newsletter-section" id="newsletter">
+    <div class="newsletter-inner">
+      <div class="nl-eyebrow reveal">// newsletter</div>
+      <h2 class="nl-title reveal">Tecnologia que importa,<br>toda semana.</h2>
+      <p class="nl-desc reveal">Artigos técnicos, tutoriais práticos e as melhores ferramentas do ecossistema dev. Direto no seu inbox, toda segunda-feira.</p>
+      <form class="nl-form reveal" onsubmit="return false">
+        <input type="email" class="nl-input" placeholder="seu@email.com">
+        <button type="submit" class="btn-nl">Quero receber →</button>
+      </form>
+      <p class="nl-privacy reveal">Sem spam. Cancele quando quiser.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn" title="Twitter/X">𝕏</a>
+          <a href="#" class="social-btn" title="GitHub">⌥</a>
+          <a href="#" class="social-btn" title="LinkedIn">in</a>
+          <a href="#" class="social-btn" title="RSS">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="#">Últimos posts</a></li>
+          <li><a href="#">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+          <li><a href="#">Autores</a></li>
+          <li><a href="#">Escreva para nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+          <li><a href="#">IA & LLMs</a></li>
+          <li><a href="#">Segurança</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+        <a href="#">RSS Feed</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/search.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

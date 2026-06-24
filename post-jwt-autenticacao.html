@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT não é suficiente: como implementar autenticação de verdade — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="reading-progress">
+    <div class="reading-progress-bar"></div>
+  </div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <header class="post-header reveal">
+    <div class="post-header-meta">
+      <span class="tag tag--orange">Segurança</span>
+      <span class="tag tag--blue">Autenticação</span>
+      <span class="meta-dot">·</span>
+      <span class="read-time">10 min de leitura</span>
+    </div>
+
+    <h1 class="post-title">JWT não é suficiente: como implementar autenticação de verdade</h1>
+
+    <div class="post-author-bar">
+      <div class="avatar-md">RN</div>
+      <div class="author-bar-info">
+        <div class="author-bar-name">Rafael Nunes</div>
+        <div class="author-bar-role">Engenheiro de Software Sênior &nbsp;·&nbsp; 30 de maio de 2025</div>
+      </div>
+      <div class="author-bar-stats">
+        <span>👁 6.8k views</span>
+        <span>💬 52 comentários</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-cover reveal">
+    <div class="post-cover-img">🔐</div>
+  </div>
+
+  <div class="post-layout">
+    <article class="post-body">
+      <p>JWT é onipresente. Todo tutorial de autenticação começa com JWT. Mas a maioria das implementações que vejo em produção tem falhas críticas: <strong>JWTs sem rotação, sem revogação, sem refresh token strategy</strong>. Resultado: uma sessão comprometida rouba o acesso indefinidamente.</p>
+
+      <p>Este artigo não é "JWT é ruim". JWT é bom como access token de curta vida. O problema é usá-lo como único mecanismo de autenticação.</p>
+
+      <div class="callout">
+        <span class="callout-icon">💡</span>
+        <p class="callout-text">Vamos cobrir o padrão que empresas sérias usam: JWT de curta duração + refresh tokens + revogação. Exemplos em Node.js/Express.</p>
+      </div>
+
+      <h2 id="problema">Por que JWT sozinho não é suficiente</h2>
+
+      <p>JWT é um <em>token auto-contido</em>. O servidor não precisa consultar banco de dados para validar — basta verificar a assinatura. Isso é ótimo para escalabilidade, mas causa problemas de segurança:</p>
+
+      <p><strong>Problema 1: Sem revogação</strong>. Uma vez emitido, um JWT é válido até expirar. Se o token for roubado, você não consegue invalidá-lo antes do vencimento. O atacante continua autenticado.</p>
+
+      <p><strong>Problema 2: Tempo de expiração vs experiência do usuário</strong>. Se você usa JWT de 1 hora, o usuário precisa fazer login de novo a cada hora — horrível. Se usa 30 dias, um token roubado fica válido por 30 dias — catastrófico.</p>
+
+      <p><strong>Problema 3: Não há como garantir que o user ainda tem acesso</strong>. Se um admin revogar permissões de um usuário, o JWT dele continua válido até expirar. O usuário continua tendo acesso mesmo tendo sido banido.</p>
+
+      <h2 id="solucao">A solução: JWT + Refresh Token</h2>
+
+      <p>O padrão seguro é usar <strong>dois tipos de token</strong>:</p>
+
+      <ul>
+        <li><strong>Access Token (JWT)</strong>: curta vida (15 minutos), usado em toda requisição. É o JWT que você conhece.</li>
+        <li><strong>Refresh Token</strong>: longa vida (7 dias), armazenado seguro no backend. Usado apenas para obter um novo access token.</li>
+      </ul>
+
+      <p>Fluxo:</p>
+
+      <pre><code><span class="cm">// 1. Login — usuário envia credenciais</span>
+<span class="cm">// POST /auth/login { username, password }</span>
+
+<span class="cm">// 2. Server valida, gera dois tokens</span>
+<span class="kw">const</span> accessToken = jwt.<span class="fn">sign</span>(
+  { userId: user.id, role: user.role },
+  SECRET,
+  { expiresIn: <span class="str">'15m'</span> }
+);
+
+<span class="kw">const</span> refreshToken = jwt.<span class="fn">sign</span>(
+  { userId: user.id },
+  REFRESH_SECRET,
+  { expiresIn: <span class="str">'7d'</span> }
+);
+
+<span class="cm">// 3. Salva refresh token no banco (não no JWT!)</span>
+db.<span class="fn">saveRefreshToken</span>(user.id, refreshToken);
+
+<span class="cm">// 4. Retorna access token no body, refresh token em HTTP-only cookie</span>
+res.<span class="fn">cookie</span>(<span class="str">'refresh_token'</span>, refreshToken, {
+  httpOnly: <span class="kw">true</span>,
+  secure: <span class="kw">true</span>,
+  sameSite: <span class="str">'strict'</span>,
+  maxAge: <span class="num">7</span> * <span class="num">24</span> * <span class="num">60</span> * <span class="num">60</span> * <span class="num">1000</span>
+});
+
+res.<span class="fn">json</span>({ accessToken });
+<span class="lang-label">javascript</span></code></pre>
+
+      <h2 id="refresh">Renovando o access token</h2>
+
+      <p>Quando o access token expira (15 minutos depois), o frontend chama um endpoint de refresh:</p>
+
+      <pre><code><span class="cm">// POST /auth/refresh — headers vazios, browser manda refresh_token automaticamente</span>
+
+<span class="kw">const</span> refreshToken = req.cookies.refresh_token;
+
+<span class="cm">// 1. Valida assinatura</span>
+<span class="kw">const</span> decoded = jwt.<span class="fn">verify</span>(refreshToken, REFRESH_SECRET);
+
+<span class="cm">// 2. Consulta banco — refresh token ainda existe?</span>
+<span class="kw">const</span> storedToken = db.<span class="fn">getRefreshToken</span>(decoded.userId);
+<span class="kw">if</span> (!storedToken || storedToken !== refreshToken) {
+  <span class="cm">// Token foi revogado ou não bate</span>
+  <span class="kw">throw</span> <span class="kw">new</span> <span class="cls">UnauthorizedError</span>(<span class="str">'Refresh token inválido'</span>);
+}
+
+<span class="cm">// 3. Gera novo access token</span>
+<span class="kw">const</span> user = db.<span class="fn">getUser</span>(decoded.userId);
+<span class="kw">const</span> newAccessToken = jwt.<span class="fn">sign</span>(
+  { userId: user.id, role: user.role },
+  SECRET,
+  { expiresIn: <span class="str">'15m'</span> }
+);
+
+<span class="kw">return</span> res.<span class="fn">json</span>({ accessToken: newAccessToken });
+<span class="lang-label">javascript</span></code></pre>
+
+      <p>Agora o backend tem <strong>controle</strong>. Se quiser revogar sessão de um usuário, simplesmente deleta o refresh token do banco.</p>
+
+      <h2 id="revogacao">Revogação: deslogar o usuário</h2>
+
+      <p>Logout real:</p>
+
+      <pre><code><span class="cm">// POST /auth/logout</span>
+
+<span class="kw">const</span> refreshToken = req.cookies.refresh_token;
+db.<span class="fn">deleteRefreshToken</span>(req.user.id, refreshToken);
+
+res.<span class="fn">clearCookie</span>(<span class="str">'refresh_token'</span>);
+res.<span class="fn">json</span>({ <span class="kw">success</span>: <span class="kw">true</span> });
+<span class="lang-label">javascript</span></code></pre>
+
+      <p>O access token ainda será válido por até 15 minutos — é aceitável, pois é de curta duração. Mas refresh token foi revogado, então não conseguem gerar novo access token.</p>
+
+      <h2 id="melhorias">Melhorias de segurança</h2>
+
+      <p><strong>Rotation de refresh token</strong>: a cada uso de refresh token, gere um novo refresh token:</p>
+
+      <pre><code><span class="cm">// Ao renovar access token, também renova refresh token</span>
+db.<span class="fn">deleteRefreshToken</span>(decoded.userId, refreshToken);
+<span class="kw">const</span> newRefreshToken = jwt.<span class="fn">sign</span>(
+  { userId: decoded.userId },
+  REFRESH_SECRET,
+  { expiresIn: <span class="str">'7d'</span> }
+);
+db.<span class="fn">saveRefreshToken</span>(decoded.userId, newRefreshToken);
+
+<span class="cm">// Retorna ambos</span>
+res.<span class="fn">cookie</span>(<span class="str">'refresh_token'</span>, newRefreshToken, { ... });
+res.<span class="fn">json</span>({ accessToken: newAccessToken });
+<span class="lang-label">javascript</span></code></pre>
+
+      <p>Se um refresh token vazar, o atacante consegue usá-lo uma única vez — depois disso, seu token fica inválido quando o servidor detecta um novo refresh token sendo usado.</p>
+
+      <p><strong>Familia tokens</strong>: mantenha histórico de refresh tokens. Se detectar uso de um token "antigo", invalide toda a sessão (token reuse detection):</p>
+
+      <pre><code><span class="cm">// Salva histórico</span>
+db.<span class="fn">saveRefreshToken</span>(userId, {
+  token: newRefreshToken,
+  family: familyId,  <span class="cm">// múltiplos tokens mesma "família"</span>
+  issuedAt: <span class="kw">new</span> Date()
+});
+
+<span class="cm">// Ao receber refresh token, valida se é da família correta e está no histórico</span>
+<span class="kw">const</span> tokenRecord = db.<span class="fn">getRefreshToken</span>(userId, refreshToken);
+<span class="kw">if</span> (!tokenRecord || tokenRecord.family !== expectedFamily) {
+  <span class="cm">// Possível roubo! Invalida toda sessão</span>
+  db.<span class="fn">invalidateAllRefreshTokens</span>(userId);
+  <span class="kw">throw</span> <span class="kw">new</span> <span class="cls">UnauthorizedError</span>(<span class="str">'Possível ataque detectado'</span>);
+}
+<span class="lang-label">javascript</span></code></pre>
+
+      <h2 id="checklist">Checklist de autenticação segura</h2>
+
+      <ul>
+        <li>✓ Access token com expiração curta (5-15 minutos)</li>
+        <li>✓ Refresh token com expiração longa (7-30 dias) armazenado no backend</li>
+        <li>✓ Refresh token em HTTP-only cookie (não em localStorage)</li>
+        <li>✓ Logout invalida refresh token no banco</li>
+        <li>✓ HTTPS obrigatório (cookies only trabalham com HTTPS em produção)</li>
+        <li>✓ Rotation de refresh token a cada uso</li>
+        <li>✓ Detecção de token reuse (roubo de tokens)</li>
+        <li>✓ Rate limiting no endpoint de login (brute force protection)</li>
+        <li>✓ 2FA para contas críticas (admin, financeiro)</li>
+      </ul>
+
+      <h2 id="conclusao">Conclusão</h2>
+
+      <p>JWT é perfeito como access token. O erro é usá-lo como token permanente. Implemente refresh tokens, guarde-os no backend, e você tem autenticação segura e escalável — o melhor dos dois mundos.</p>
+    </article>
+
+    <aside>
+      <nav class="toc">
+        <div class="toc-title">Neste artigo</div>
+        <ul class="toc-list">
+          <li><a href="#problema">Por que JWT sozinho não é suficiente</a></li>
+          <li><a href="#solucao">JWT + Refresh Token</a></li>
+          <li><a href="#refresh">Renovando access token</a></li>
+          <li><a href="#revogacao">Revogação e logout</a></li>
+          <li><a href="#melhorias">Melhorias de segurança</a></li>
+          <li><a href="#checklist">Checklist</a></li>
+          <li><a href="#conclusao">Conclusão</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <div class="post-footer">
+    <div class="post-tags">
+      <span class="tag tag--orange">Segurança</span>
+      <span class="tag tag--blue">Autenticação</span>
+      <span class="tag tag--pink">Node.js</span>
+      <span class="tag tag--orange">JWT</span>
+    </div>
+
+    <div class="post-share">
+      <span class="share-label">Compartilhar</span>
+      <div class="share-btns">
+        <button class="share-btn">𝕏 Twitter</button>
+        <button class="share-btn">in LinkedIn</button>
+        <button class="share-btn">🔗 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="author-card reveal">
+      <div class="avatar-lg">RN</div>
+      <div>
+        <div class="author-card-name">Rafael Nunes</div>
+        <div class="author-card-role">// senior-software-engineer</div>
+        <p class="author-card-bio">Especialista em segurança e arquitetura de sistemas. Trabalha com autenticação, autorização e criptografia em escala. Escreve sobre segurança aplicada no DevPulse.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="related-section">
+    <div class="section-header reveal">
+      <span class="section-title">// você também pode gostar</span>
+    </div>
+    <div class="related-grid">
+      <article class="post-card reveal" onclick="location.href='post-docker-podman.html'">
+        <div class="post-card-image">🐳</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Docker vs Podman em 2025</h2>
+          <p class="post-card-excerpt">Qual container runtime escolher para seu workflow de desenvolvimento e produção?</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">5 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-kubernetes-devs.html'">
+        <div class="post-card-image">☸️</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Kubernetes para devs</h2>
+          <p class="post-card-excerpt">Do zero ao primeiro deploy em produção sem precisar de uma semana de configuração.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">12 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-typescript-55.html'">
+        <div class="post-card-image">⚡</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--blue">TypeScript</span></div>
+          <h2 class="post-card-title">TypeScript 5.5: as features que importam</h2>
+          <p class="post-card-excerpt">Decorators estabilizados, inferência melhorada e muito mais no novo TypeScript.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">AM</div> Ana Mello</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">7 min</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

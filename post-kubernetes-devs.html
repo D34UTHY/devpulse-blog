@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kubernetes para devs: do zero ao primeiro deploy em produção — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="reading-progress">
+    <div class="reading-progress-bar"></div>
+  </div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <header class="post-header reveal">
+    <div class="post-header-meta">
+      <span class="tag tag--green">DevOps</span>
+      <span class="tag tag--blue">Kubernetes</span>
+      <span class="meta-dot">·</span>
+      <span class="read-time">12 min de leitura</span>
+    </div>
+
+    <h1 class="post-title">Kubernetes para devs: do zero ao primeiro deploy em produção</h1>
+
+    <div class="post-author-bar">
+      <div class="avatar-md">LC</div>
+      <div class="author-bar-info">
+        <div class="author-bar-name">Lucas Costa</div>
+        <div class="author-bar-role">SRE &nbsp;·&nbsp; 5 de junho de 2025</div>
+      </div>
+      <div class="author-bar-stats">
+        <span>👁 4.1k views</span>
+        <span>💬 32 comentários</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-cover reveal">
+    <div class="post-cover-img">☸️</div>
+  </div>
+
+  <div class="post-layout">
+    <article class="post-body">
+      <p>Kubernetes tem fama de complexo. E é — se você tentar aprender tudo de uma vez. Mas <strong>para colocar sua aplicação em produção, você precisa de apenas 5 conceitos fundamentais</strong>: Pods, Deployments, Services, ConfigMaps e Secrets.</p>
+
+      <p>Este artigo não é um curso completo de K8s. É o caminho mais curto entre "tenho uma aplicação containerizada" e "ela está rodando em produção num cluster". Sem operators customizados, sem service mesh, sem nada além do essencial.</p>
+
+      <div class="callout">
+        <span class="callout-icon">💡</span>
+        <p class="callout-text">Pré-requisito: você já sabe fazer Docker build e rodar containers localmente. Se não sabe, volte um passo — K8s orquestra containers, não os cria do zero.</p>
+      </div>
+
+      <h2 id="conceitos">Os 5 conceitos que importam</h2>
+
+      <p>Pense no Kubernetes como uma planilha de Excel para infraestrutura. Você declara <em>o que quer</em> (3 réplicas da aplicação, balanceamento de carga, variáveis de ambiente), e o K8s garante que o estado atual corresponda ao estado desejado.</p>
+
+      <p><strong>Pod</strong>: a menor unidade deployável. Um ou mais containers que rodam juntos e compartilham rede e storage. Na prática, 95% dos Pods têm apenas 1 container.</p>
+
+      <p><strong>Deployment</strong>: gerencia réplicas de Pods. Você diz "quero 3 instâncias dessa aplicação", e o Deployment garante que sempre haverá 3 rodando, mesmo se uma cair.</p>
+
+      <p><strong>Service</strong>: expõe Pods para a rede. Como Pods são efêmeros (podem morrer e ser recriados com IPs novos), o Service dá um DNS estável: <code>minha-api.default.svc.cluster.local</code>.</p>
+
+      <p><strong>ConfigMap</strong> e <strong>Secret</strong>: guardam configuração. ConfigMap para dados não-sensíveis (URLs de API, feature flags). Secret para credenciais (tokens, senhas).</p>
+
+      <h2 id="primeiro-deploy">Primeiro deploy: uma API Node.js</h2>
+
+      <p>Vamos deployar uma API simples. Você já tem a imagem Docker no registry (Docker Hub, ECR, GCR). Agora precisamos de 3 arquivos YAML:</p>
+
+      <pre><code><span class="cm"># deployment.yaml</span>
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: Deployment
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: minha-api
+<span class="kw">spec</span>:
+  <span class="kw">replicas</span>: 3
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>:
+      <span class="kw">app</span>: minha-api
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>:
+        <span class="kw">app</span>: minha-api
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+      - <span class="kw">name</span>: api
+        <span class="kw">image</span>: seu-registry/minha-api:v1.0.0
+        <span class="kw">ports</span>:
+        - <span class="kw">containerPort</span>: 3000
+        <span class="kw">env</span>:
+        - <span class="kw">name</span>: NODE_ENV
+          <span class="kw">value</span>: <span class="str">"production"</span>
+<span class="lang-label">yaml</span></code></pre>
+
+      <p>Deploy com <code>kubectl apply -f deployment.yaml</code>. O K8s cria 3 Pods, cada um rodando sua imagem Docker. Se um Pod crashar, o Deployment automaticamente cria outro.</p>
+
+      <h2 id="service">Expondo com Service</h2>
+
+      <p>Agora os Pods estão rodando, mas inacessíveis. Precisamos de um Service:</p>
+
+      <pre><code><span class="cm"># service.yaml</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: minha-api
+<span class="kw">spec</span>:
+  <span class="kw">type</span>: LoadBalancer
+  <span class="kw">selector</span>:
+    <span class="kw">app</span>: minha-api
+  <span class="kw">ports</span>:
+  - <span class="kw">port</span>: 80
+    <span class="kw">targetPort</span>: 3000
+<span class="lang-label">yaml</span></code></pre>
+
+      <p><code>kubectl apply -f service.yaml</code>. Em clouds (AWS, GCP, Azure), <code>type: LoadBalancer</code> provisiona automaticamente um load balancer externo. Em clusters locais (minikube, kind), use <code>type: NodePort</code> ou configure Ingress.</p>
+
+      <h2 id="secrets">ConfigMap e Secrets</h2>
+
+      <p>Nunca hardcode credenciais no Deployment. Use Secrets:</p>
+
+      <pre><code><span class="cm"># secrets.yaml</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Secret
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: db-credentials
+<span class="kw">type</span>: Opaque
+<span class="kw">stringData</span>:
+  <span class="kw">DATABASE_URL</span>: <span class="str">"postgresql://user:pass@host:5432/db"</span>
+<span class="lang-label">yaml</span></code></pre>
+
+      <p>Referencia no Deployment:</p>
+
+      <pre><code><span class="kw">env</span>:
+- <span class="kw">name</span>: DATABASE_URL
+  <span class="kw">valueFrom</span>:
+    <span class="kw">secretKeyRef</span>:
+      <span class="kw">name</span>: db-credentials
+      <span class="kw">key</span>: DATABASE_URL
+<span class="lang-label">yaml</span></code></pre>
+
+      <p>Secrets são encodados em base64 por padrão — <strong>não é criptografia</strong>. Em produção, use soluções como Sealed Secrets, External Secrets Operator, ou integração com vaults (AWS Secrets Manager, HashiCorp Vault).</p>
+
+      <h2 id="atualizacao">Deploy de nova versão</h2>
+
+      <p>Você fez código novo, buildou <code>minha-api:v1.1.0</code>. Como atualizar sem downtime?</p>
+
+      <pre><code><span class="cm"># Edita deployment.yaml, muda a image para v1.1.0</span>
+kubectl apply -f deployment.yaml
+
+<span class="cm"># Kubernetes faz rolling update automaticamente:</span>
+<span class="cm"># - Cria 1 Pod com v1.1.0</span>
+<span class="cm"># - Espera ficar healthy</span>
+<span class="cm"># - Derruba 1 Pod v1.0.0</span>
+<span class="cm"># - Repete até todos estarem v1.1.0</span>
+<span class="lang-label">bash</span></code></pre>
+
+      <p>Zero downtime, zero config extra. Se a v1.1.0 crashar ao iniciar, o rollout para automaticamente — os Pods antigos continuam rodando.</p>
+
+      <h2 id="observabilidade">Logs e debugging</h2>
+
+      <p>Comandos essenciais para diagnosticar problemas:</p>
+
+      <pre><code><span class="cm"># Ver Pods rodando</span>
+kubectl get pods
+
+<span class="cm"># Logs de um Pod específico</span>
+kubectl logs minha-api-7d9f8c-abcde
+
+<span class="cm"># Logs em tempo real (tail -f)</span>
+kubectl logs -f minha-api-7d9f8c-abcde
+
+<span class="cm"># Descrever um Pod (útil quando não sobe)</span>
+kubectl describe pod minha-api-7d9f8c-abcde
+
+<span class="cm"># Executar comando dentro do Pod</span>
+kubectl exec -it minha-api-7d9f8c-abcde -- /bin/sh
+<span class="lang-label">bash</span></code></pre>
+
+      <h2 id="conclusao">Próximos passos</h2>
+
+      <p>Com esses 5 conceitos, você já consegue deployar aplicações reais em produção. O que fica de fora? Muito:</p>
+
+      <ul>
+        <li>Ingress (roteamento HTTP, múltiplos services sob um domínio)</li>
+        <li>Persistent Volumes (storage que sobrevive ao Pod)</li>
+        <li>Horizontal Pod Autoscaler (escala automática baseada em CPU/memória)</li>
+        <li>Network Policies (firewall entre Pods)</li>
+        <li>Service Mesh (mTLS, observabilidade avançada)</li>
+      </ul>
+
+      <p>Mas você não precisa disso no dia 1. Comece simples: Deployments + Services + Secrets. Quando bater em limitação real, adicione complexidade. Kubernetes recompensa quem aprende incremental, não quem tenta absorver tudo de uma vez.</p>
+    </article>
+
+    <aside>
+      <nav class="toc">
+        <div class="toc-title">Neste artigo</div>
+        <ul class="toc-list">
+          <li><a href="#conceitos">Os 5 conceitos que importam</a></li>
+          <li><a href="#primeiro-deploy">Primeiro deploy</a></li>
+          <li><a href="#service">Expondo com Service</a></li>
+          <li><a href="#secrets">ConfigMap e Secrets</a></li>
+          <li><a href="#atualizacao">Deploy de nova versão</a></li>
+          <li><a href="#observabilidade">Logs e debugging</a></li>
+          <li><a href="#conclusao">Próximos passos</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <div class="post-footer">
+    <div class="post-tags">
+      <span class="tag tag--green">DevOps</span>
+      <span class="tag tag--blue">Kubernetes</span>
+      <span class="tag tag--green">Docker</span>
+      <span class="tag tag--orange">Infraestrutura</span>
+    </div>
+
+    <div class="post-share">
+      <span class="share-label">Compartilhar</span>
+      <div class="share-btns">
+        <button class="share-btn">𝕏 Twitter</button>
+        <button class="share-btn">in LinkedIn</button>
+        <button class="share-btn">🔗 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="author-card reveal">
+      <div class="avatar-lg">LC</div>
+      <div>
+        <div class="author-card-name">Lucas Costa</div>
+        <div class="author-card-role">// site-reliability-engineer</div>
+        <p class="author-card-bio">SRE com foco em Kubernetes e observabilidade. Mantém projetos open-source de infraestrutura e escreve sobre DevOps, containers e cloud-native no DevPulse.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="related-section">
+    <div class="section-header reveal">
+      <span class="section-title">// você também pode gostar</span>
+    </div>
+    <div class="related-grid">
+      <article class="post-card reveal" onclick="location.href='post-docker-podman.html'">
+        <div class="post-card-image">🐳</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Docker vs Podman em 2025</h2>
+          <p class="post-card-excerpt">Qual container runtime escolher para seu workflow de desenvolvimento e produção?</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">5 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-rust-backend.html'">
+        <div class="post-card-image">🦀</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Rust</span></div>
+          <h2 class="post-card-title">Rust no back-end em 2025</h2>
+          <p class="post-card-excerpt">Por que grandes empresas estão migrando partes críticas dos sistemas para Rust.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">8 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-jwt-autenticacao.html'">
+        <div class="post-card-image">🔐</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Segurança</span></div>
+          <h2 class="post-card-title">JWT não é suficiente</h2>
+          <p class="post-card-excerpt">Como implementar autenticação de verdade com refresh tokens e rotação segura.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">10 min</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

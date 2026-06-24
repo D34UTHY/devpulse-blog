@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TypeScript 5.5: as features que você precisa conhecer agora — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="reading-progress">
+    <div class="reading-progress-bar"></div>
+  </div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <header class="post-header reveal">
+    <div class="post-header-meta">
+      <span class="tag tag--blue">TypeScript</span>
+      <span class="tag tag--pink">Node.js</span>
+      <span class="meta-dot">·</span>
+      <span class="read-time">7 min de leitura</span>
+    </div>
+
+    <h1 class="post-title">TypeScript 5.5: as features que você precisa conhecer agora</h1>
+
+    <div class="post-author-bar">
+      <div class="avatar-md">AM</div>
+      <div class="author-bar-info">
+        <div class="author-bar-name">Ana Mello</div>
+        <div class="author-bar-role">Engenheira Front-end &nbsp;·&nbsp; 8 de junho de 2025</div>
+      </div>
+      <div class="author-bar-stats">
+        <span>👁 2.8k views</span>
+        <span>💬 15 comentários</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-cover reveal">
+    <div class="post-cover-img">⚡</div>
+  </div>
+
+  <div class="post-layout">
+    <article class="post-body">
+      <p>O TypeScript 5.5 chegou com mudanças que vão além de melhorias incrementais. Desta vez, temos <strong>decorators estabilizados, inferência aprimorada de tipos em closures</strong>, e otimizações que tornam o compilador até 40% mais rápido em projetos grandes.</p>
+
+      <p>Se você ainda está no 5.2 ou 5.3, este upgrade vale a pena — especialmente se trabalha com frameworks que dependem de decorators (NestJS, Angular, TypeORM) ou lida com tipos complexos em bases de código grandes.</p>
+
+      <h2 id="decorators">Decorators estáveis (finalmente)</h2>
+
+      <p>Decorators saíram da fase experimental. A sintaxe <code>@</code> agora funciona sem flags no <code>tsconfig.json</code>, e segue a especificação oficial do TC39 Stage 3.</p>
+
+      <pre><code><span class="kw">function</span> <span class="fn">log</span>(target: <span class="cls">any</span>, key: <span class="kw">string</span>) {
+  <span class="kw">const</span> original = target[key];
+  target[key] = <span class="kw">function</span>(...args: <span class="cls">any</span>[]) {
+    console.<span class="fn">log</span>(<span class="str">`Chamando ${key} com`</span>, args);
+    <span class="kw">return</span> original.<span class="fn">apply</span>(<span class="kw">this</span>, args);
+  };
+}
+
+<span class="kw">class</span> <span class="cls">UserService</span> {
+  <span class="cm">@log</span>
+  <span class="fn">createUser</span>(name: <span class="kw">string</span>) {
+    <span class="kw">return</span> { id: <span class="num">1</span>, name };
+  }
+}
+<span class="lang-label">typescript</span></code></pre>
+
+      <p>Antes, era necessário <code>"experimentalDecorators": true</code>. Agora funciona nativamente. Frameworks como NestJS e TypeORM já migraram para a nova sintaxe — se você usa esses projetos, atualizar para 5.5 elimina warnings de deprecação.</p>
+
+      <h2 id="inferencia">Inferência de tipos em closures</h2>
+
+      <p>Uma das frustrações históricas do TypeScript: closures perdiam contexto de tipo em situações específicas. O 5.5 corrige isso com inferência melhorada de contexto em funções aninhadas:</p>
+
+      <pre><code><span class="kw">const</span> users = [
+  { id: <span class="num">1</span>, name: <span class="str">'Ana'</span> },
+  { id: <span class="num">2</span>, name: <span class="str">'Bruno'</span> }
+];
+
+<span class="cm">// Antes: 'item' era inferido como 'any'</span>
+<span class="cm">// Agora: 'item' é corretamente { id: number; name: string }</span>
+<span class="kw">const</span> names = users.<span class="fn">map</span>(item => item.name.<span class="fn">toUpperCase</span>());
+<span class="lang-label">typescript</span></code></pre>
+
+      <p>Parece pequeno, mas elimina dezenas de anotações de tipo redundantes em bases de código grandes. O compilador agora é mais esperto em propagar tipos através de chains de <code>.map()</code>, <code>.filter()</code>, e <code>.reduce()</code>.</p>
+
+      <h2 id="performance">Performance do compilador</h2>
+
+      <p>O time do TS reescreveu partes do binder e do checker. Resultado: <strong>até 40% mais rápido em projetos com +100k linhas</strong>. Em monorepos grandes (pnpm workspaces, turborepo), a diferença é visível:</p>
+
+      <ul>
+        <li>Build de um projeto NestJS com 80 módulos: de 12s para 7s</li>
+        <li>Type-checking de um monorepo React com 15 pacotes: de 18s para 11s</li>
+      </ul>
+
+      <p>A otimização vem principalmente de cache interno melhorado — o compilador reutiliza resultados de type-checking entre builds incrementais com muito mais eficiência.</p>
+
+      <h2 id="breaking">Breaking changes (poucas, mas importantes)</h2>
+
+      <p>O 5.5 é conservador em breaking changes, mas tem duas que podem afetar código existente:</p>
+
+      <ul>
+        <li><strong>Strict null checks mais rigorosos</strong> em optional chaining — <code>obj?.prop</code> agora diferencia corretamente entre <code>undefined</code> e <code>null</code></li>
+        <li><strong>Inferência de tipo em <code>const</code> assertions</strong> mudou sutilmente — alguns casos que antes inferiam <code>string</code> agora inferem literal types</li>
+      </ul>
+
+      <p>Na prática, 95% dos projetos atualizam sem modificação. Mas rode <code>tsc --noEmit</code> antes de deployar para produção.</p>
+
+      <h2 id="conclusao">Vale a pena atualizar?</h2>
+
+      <p><strong>Sim, especialmente se:</strong></p>
+
+      <ul>
+        <li>Você usa decorators (NestJS, Angular, TypeORM, class-validator)</li>
+        <li>Trabalha em projetos grandes onde build time importa</li>
+        <li>Quer eliminar anotações de tipo redundantes em closures</li>
+      </ul>
+
+      <p>A migração é tranquila. Atualize o pacote, rode os testes, e você já está aproveitando as melhorias. O ganho de performance sozinho já justifica o upgrade.</p>
+    </article>
+
+    <aside>
+      <nav class="toc">
+        <div class="toc-title">Neste artigo</div>
+        <ul class="toc-list">
+          <li><a href="#decorators">Decorators estáveis</a></li>
+          <li><a href="#inferencia">Inferência em closures</a></li>
+          <li><a href="#performance">Performance do compilador</a></li>
+          <li><a href="#breaking">Breaking changes</a></li>
+          <li><a href="#conclusao">Vale a pena atualizar?</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <div class="post-footer">
+    <div class="post-tags">
+      <span class="tag tag--blue">TypeScript</span>
+      <span class="tag tag--pink">Node.js</span>
+      <span class="tag tag--blue">Front-end</span>
+    </div>
+
+    <div class="post-share">
+      <span class="share-label">Compartilhar</span>
+      <div class="share-btns">
+        <button class="share-btn">𝕏 Twitter</button>
+        <button class="share-btn">in LinkedIn</button>
+        <button class="share-btn">🔗 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="author-card reveal">
+      <div class="avatar-lg">AM</div>
+      <div>
+        <div class="author-card-name">Ana Mello</div>
+        <div class="author-card-role">// frontend-engineer</div>
+        <p class="author-card-bio">Especialista em performance e acessibilidade. Contribuidora do ecossistema React e TypeScript. Escreve sobre front-end moderno e Web APIs no DevPulse.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="related-section">
+    <div class="section-header reveal">
+      <span class="section-title">// você também pode gostar</span>
+    </div>
+    <div class="related-grid">
+      <article class="post-card reveal" onclick="location.href='post-kubernetes-devs.html'">
+        <div class="post-card-image">🐳</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Kubernetes para devs</h2>
+          <p class="post-card-excerpt">Do zero ao primeiro deploy em produção sem precisar de uma semana de configuração.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">12 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-rag-langchain.html'">
+        <div class="post-card-image">🤖</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--purple">IA</span></div>
+          <h2 class="post-card-title">RAG com LangChain e PostgreSQL</h2>
+          <p class="post-card-excerpt">Como implementar Retrieval-Augmented Generation do zero com pgvector.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">PF</div> Paula Freitas</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">15 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-rust-backend.html'">
+        <div class="post-card-image">🦀</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Rust</span></div>
+          <h2 class="post-card-title">Rust no back-end em 2025</h2>
+          <p class="post-card-excerpt">Por que grandes empresas estão migrando partes críticas dos sistemas para Rust.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">8 min</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

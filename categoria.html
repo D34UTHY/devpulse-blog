@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps & Infraestrutura — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html" class="active">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <div class="cat-header">
+    <div class="cat-breadcrumb reveal">
+      <a href="index.html">Home</a>
+      <span>/</span>
+      <a href="categoria.html">Categorias</a>
+      <span>/</span>
+      DevOps
+    </div>
+
+    <div class="cat-title-area reveal">
+      <div class="cat-icon">🐳</div>
+      <h1 class="cat-page-title">DevOps & Infraestrutura</h1>
+    </div>
+
+    <p class="cat-desc reveal">Containers, CI/CD, orquestração, cloud e tudo que acontece depois do <code style="font-family:var(--font-mono);background:var(--bg3);padding:0.1em 0.4em;border-radius:4px;font-size:0.9em;color:var(--pink)">git push</code>. Artigos práticos para quem cuida da saúde de sistemas em produção.</p>
+
+    <div class="cat-stats reveal">
+      <div class="cat-stat">
+        <strong>18</strong>
+        Artigos
+      </div>
+      <div class="cat-stat">
+        <strong>4</strong>
+        Autores
+      </div>
+      <div class="cat-stat">
+        <strong>12.4k</strong>
+        Leituras/mês
+      </div>
+    </div>
+  </div>
+
+  <div class="categories-bar">
+    <a href="#" class="cat-pill active" data-category="devops">🐳 DevOps</a>
+    <a href="#" class="cat-pill" data-category="front-end">⚡ TypeScript</a>
+    <a href="#" class="cat-pill" data-category="ia">🤖 IA & LLMs</a>
+    <a href="#" class="cat-pill" data-category="back-end">🦀 Rust</a>
+    <a href="#" class="cat-pill" data-category="seguranca">🔐 Segurança</a>
+  </div>
+
+  <div class="cat-posts-grid">
+    <article class="post-card reveal" data-category="devops" onclick="location.href='post-docker-podman.html'">
+      <div class="post-card-image">🐳</div>
+      <div class="post-card-body">
+        <div class="post-card-tags">
+          <span class="tag tag--green">DevOps</span>
+        </div>
+        <h2 class="post-card-title">Docker vs Podman em 2025: qual usar no seu workflow?</h2>
+        <p class="post-card-excerpt">Comparativo completo entre os dois container runtimes mais usados, com análise de performance, DX e casos de uso de cada um em produção.</p>
+        <div class="post-card-footer">
+          <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa &nbsp;·&nbsp; <span class="read-time">5 min</span></div>
+          <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">5 Jun</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="post-card reveal" data-category="devops" onclick="location.href='post-kubernetes-devs.html'">
+      <div class="post-card-image">☸️</div>
+      <div class="post-card-body">
+        <div class="post-card-tags">
+          <span class="tag tag--green">DevOps</span>
+          <span class="tag tag--blue">Kubernetes</span>
+        </div>
+        <h2 class="post-card-title">Kubernetes para devs: do zero ao primeiro deploy em produção</h2>
+        <p class="post-card-excerpt">K8s tem fama de complexo, mas com a abordagem certa qualquer dev consegue subir sua aplicação em cluster sem precisar de uma semana de configuração.</p>
+        <div class="post-card-footer">
+          <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa &nbsp;·&nbsp; <span class="read-time">12 min</span></div>
+          <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">2 Jun</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="post-card reveal" data-category="devops" onclick="location.href='post-rust-backend.html'">
+      <div class="post-card-image">🦀</div>
+      <div class="post-card-body">
+        <div class="post-card-tags">
+          <span class="tag tag--orange">Rust</span>
+        </div>
+        <h2 class="post-card-title">Por que o Rust está conquistando o back-end em 2025</h2>
+        <p class="post-card-excerpt">Performance de C++ com segurança de memória garantida em tempo de compilação, sem GC e sem runtime overhead.</p>
+        <div class="post-card-footer">
+          <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes &nbsp;·&nbsp; <span class="read-time">8 min</span></div>
+          <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">12 Jun</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <section class="newsletter-section" id="newsletter">
+    <div class="newsletter-inner">
+      <div class="nl-eyebrow reveal">// newsletter</div>
+      <h2 class="nl-title reveal">Tecnologia que importa,<br>toda semana.</h2>
+      <p class="nl-desc reveal">Artigos técnicos, tutoriais práticos e as melhores ferramentas do ecossistema dev.</p>
+      <form class="nl-form reveal" onsubmit="return false">
+        <input type="email" class="nl-input" placeholder="seu@email.com">
+        <button type="submit" class="btn-nl">Quero receber →</button>
+      </form>
+      <p class="nl-privacy reveal">Sem spam. Cancele quando quiser.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+          <li><a href="#">Autores</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+          <li><a href="#">IA & LLMs</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+        <a href="#">RSS Feed</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>

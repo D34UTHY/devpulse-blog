@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Construindo um RAG do zero com LangChain e PostgreSQL — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="reading-progress">
+    <div class="reading-progress-bar"></div>
+  </div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <header class="post-header reveal">
+    <div class="post-header-meta">
+      <span class="tag tag--purple">IA</span>
+      <span class="tag tag--blue">Python</span>
+      <span class="tag tag--green">PostgreSQL</span>
+      <span class="meta-dot">·</span>
+      <span class="read-time">15 min de leitura</span>
+    </div>
+
+    <h1 class="post-title">Construindo um RAG do zero com LangChain e PostgreSQL</h1>
+
+    <div class="post-author-bar">
+      <div class="avatar-md">PF</div>
+      <div class="author-bar-info">
+        <div class="author-bar-name">Paula Freitas</div>
+        <div class="author-bar-role">Engenheira de Software &nbsp;·&nbsp; 2 de junho de 2025</div>
+      </div>
+      <div class="author-bar-stats">
+        <span>👁 5.2k views</span>
+        <span>💬 41 comentários</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-cover reveal">
+    <div class="post-cover-img">🤖</div>
+  </div>
+
+  <div class="post-layout">
+    <article class="post-body">
+      <p>RAG (Retrieval-Augmented Generation) virou o padrão da indústria para dar contexto customizado a LLMs. Ao invés de fazer fine-tuning — que é caro e lento — você injeta documentos relevantes no prompt em runtime.</p>
+
+      <p>A arquitetura é direta: <strong>(1) embeddings dos seus documentos → (2) armazena num vector database → (3) busca semântica ao receber pergunta → (4) passa os documentos relevantes pro LLM</strong>. Vamos implementar isso do zero.</p>
+
+      <div class="callout">
+        <span class="callout-icon">💡</span>
+        <p class="callout-text">Você vai precisar de: Python 3.10+, PostgreSQL 15+ com extensão pgvector, e uma API key da OpenAI (ou qualquer modelo de embedding compatível).</p>
+      </div>
+
+      <h2 id="setup">Setup: PostgreSQL + pgvector</h2>
+
+      <p>O pgvector adiciona suporte nativo a vetores no Postgres. É mais simples que configurar Pinecone ou Weaviate, e roda onde você já tem Postgres:</p>
+
+      <pre><code><span class="cm">-- No PostgreSQL, habilita a extensão</span>
+<span class="kw">CREATE EXTENSION</span> vector;
+
+<span class="cm">-- Tabela pra guardar os chunks de documento</span>
+<span class="kw">CREATE TABLE</span> documents (
+  id <span class="kw">SERIAL PRIMARY KEY</span>,
+  content <span class="kw">TEXT NOT NULL</span>,
+  embedding vector(<span class="num">1536</span>),  <span class="cm">-- OpenAI ada-002 gera vetores de 1536 dims</span>
+  metadata <span class="kw">JSONB</span>
+);
+
+<span class="cm">-- Índice pra busca vetorial eficiente</span>
+<span class="kw">CREATE INDEX ON</span> documents <span class="kw">USING</span> ivfflat (embedding vector_cosine_ops);
+<span class="lang-label">sql</span></code></pre>
+
+      <p>O índice <code>ivfflat</code> usa approximate nearest neighbor search — sacrifica precisão perfeita por velocidade. Em bases com milhões de vetores, é essencial.</p>
+
+      <h2 id="embeddings">Gerando embeddings dos documentos</h2>
+
+      <p>Você tem PDFs, páginas web, docs internos. Primeiro passo: quebrar em chunks pequenos (~500 tokens) e gerar embeddings:</p>
+
+      <pre><code><span class="kw">from</span> langchain.text_splitter <span class="kw">import</span> RecursiveCharacterTextSplitter
+<span class="kw">from</span> langchain.embeddings <span class="kw">import</span> OpenAIEmbeddings
+<span class="kw">import</span> psycopg2
+
+<span class="cm"># Conecta no Postgres</span>
+conn = psycopg2.<span class="fn">connect</span>(<span class="str">"postgresql://user:pass@localhost/dbname"</span>)
+cur = conn.<span class="fn">cursor</span>()
+
+<span class="cm"># Divide documento em chunks</span>
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=<span class="num">500</span>,
+    chunk_overlap=<span class="num">50</span>  <span class="cm"># overlap pra não perder contexto nas bordas</span>
+)
+chunks = splitter.<span class="fn">split_text</span>(documento_completo)
+
+<span class="cm"># Gera embeddings</span>
+embeddings_model = OpenAIEmbeddings()
+<span class="kw">for</span> chunk <span class="kw">in</span> chunks:
+    embedding = embeddings_model.<span class="fn">embed_query</span>(chunk)
+    cur.<span class="fn">execute</span>(
+        <span class="str">"INSERT INTO documents (content, embedding) VALUES (%s, %s)"</span>,
+        (chunk, embedding)
+    )
+conn.<span class="fn">commit</span>()
+<span class="lang-label">python</span></code></pre>
+
+      <p><code>chunk_overlap=50</code> é importante — sem isso, informações divididas entre dois chunks ficam inacessíveis. Overlap de 10-15% é padrão.</p>
+
+      <h2 id="retrieval">Busca semântica</h2>
+
+      <p>Agora vem a mágica: dada uma pergunta, encontrar os chunks mais relevantes:</p>
+
+      <pre><code>pergunta = <span class="str">"Como configurar autenticação JWT?"</span>
+
+<span class="cm"># Gera embedding da pergunta</span>
+query_embedding = embeddings_model.<span class="fn">embed_query</span>(pergunta)
+
+<span class="cm"># Busca os 3 chunks mais similares</span>
+cur.<span class="fn">execute</span>(<span class="str">"""
+    SELECT content
+    FROM documents
+    ORDER BY embedding <-> %s
+    LIMIT 3
+"""</span>, (query_embedding,))
+
+documentos_relevantes = cur.<span class="fn">fetchall</span>()
+<span class="lang-label">python</span></code></pre>
+
+      <p>O operador <code>&lt;-&gt;</code> do pgvector calcula distância de cosseno. Quanto menor, mais similar. Esse SELECT retorna os 3 documentos mais próximos da pergunta no espaço vetorial.</p>
+
+      <h2 id="generation">Generation: passando pro LLM</h2>
+
+      <p>Última etapa: monta o prompt com contexto e envia pro GPT:</p>
+
+      <pre><code><span class="kw">from</span> langchain.chat_models <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.prompts <span class="kw">import</span> ChatPromptTemplate
+
+<span class="cm"># Monta contexto</span>
+contexto = <span class="str">"\n\n"</span>.<span class="fn">join</span>([doc[<span class="num">0</span>] <span class="kw">for</span> doc <span class="kw">in</span> documentos_relevantes])
+
+<span class="cm"># Template do prompt</span>
+template = ChatPromptTemplate.<span class="fn">from_messages</span>([
+    (<span class="str">"system"</span>, <span class="str">"Você é um assistente técnico. Use o contexto abaixo para responder."</span>),
+    (<span class="str">"user"</span>, <span class="str">"Contexto:\n{contexto}\n\nPergunta: {pergunta}"</span>)
+])
+
+<span class="cm"># Chama o LLM</span>
+llm = ChatOpenAI(model=<span class="str">"gpt-4"</span>)
+mensagens = template.<span class="fn">format_messages</span>(
+    contexto=contexto,
+    pergunta=pergunta
+)
+resposta = llm(mensagens)
+
+<span class="fn">print</span>(resposta.content)
+<span class="lang-label">python</span></code></pre>
+
+      <p>O LLM agora tem acesso aos seus documentos internos. Se a resposta estiver nos chunks recuperados, ele vai usar. Senão, vai dizer que não sabe — muito melhor que alucinar.</p>
+
+      <h2 id="otimizacoes">Otimizações de produção</h2>
+
+      <p>O código acima funciona, mas em produção você vai querer:</p>
+
+      <ul>
+        <li><strong>Reranking</strong>: recupera 20 chunks, usa um modelo de reranking (Cohere, cross-encoder) pra pegar os top 3 realmente relevantes</li>
+        <li><strong>Metadata filtering</strong>: adiciona filtros tipo <code>WHERE metadata->>'source' = 'docs-api'</code> antes da busca vetorial</li>
+        <li><strong>Cache de embeddings</strong>: gerar embeddings é caro — cacheia perguntas comuns no Redis</li>
+        <li><strong>Chunk smarter, not harder</strong>: em vez de tamanho fixo, use splitters conscientes de estrutura (mantém parágrafos inteiros, não quebra no meio de código)</li>
+      </ul>
+
+      <h2 id="conclusao">Quando usar RAG vs fine-tuning</h2>
+
+      <p><strong>Use RAG quando:</strong></p>
+
+      <ul>
+        <li>Seus dados mudam frequentemente (docs internos, base de conhecimento)</li>
+        <li>Você precisa de transparência (dá pra ver exatamente quais documentos foram usados)</li>
+        <li>Orçamento limitado (fine-tuning de GPT-4 custa dezenas de milhares de dólares)</li>
+      </ul>
+
+      <p><strong>Use fine-tuning quando:</strong></p>
+
+      <ul>
+        <li>Você quer mudar o *comportamento* do modelo (tom, estilo, formato de resposta)</li>
+        <li>Latência importa muito (RAG adiciona overhead da busca vetorial)</li>
+        <li>Seus dados cabem no contexto sem busca (GPT-4 Turbo tem 128k tokens)</li>
+      </ul>
+
+      <p>Na prática, muitos sistemas usam os dois: RAG pra contexto dinâmico + fine-tuning pra comportamento customizado. Mas comece com RAG — é mais rápido de validar e iterar.</p>
+    </article>
+
+    <aside>
+      <nav class="toc">
+        <div class="toc-title">Neste artigo</div>
+        <ul class="toc-list">
+          <li><a href="#setup">Setup: PostgreSQL + pgvector</a></li>
+          <li><a href="#embeddings">Gerando embeddings</a></li>
+          <li><a href="#retrieval">Busca semântica</a></li>
+          <li><a href="#generation">Generation com LLM</a></li>
+          <li><a href="#otimizacoes">Otimizações de produção</a></li>
+          <li><a href="#conclusao">RAG vs fine-tuning</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <div class="post-footer">
+    <div class="post-tags">
+      <span class="tag tag--purple">IA</span>
+      <span class="tag tag--blue">Python</span>
+      <span class="tag tag--green">PostgreSQL</span>
+      <span class="tag tag--purple">LLMs</span>
+    </div>
+
+    <div class="post-share">
+      <span class="share-label">Compartilhar</span>
+      <div class="share-btns">
+        <button class="share-btn">𝕏 Twitter</button>
+        <button class="share-btn">in LinkedIn</button>
+        <button class="share-btn">🔗 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="author-card reveal">
+      <div class="avatar-lg">PF</div>
+      <div>
+        <div class="author-card-name">Paula Freitas</div>
+        <div class="author-card-role">// software-engineer</div>
+        <p class="author-card-bio">Engenheira de software especializada em IA e segurança. Trabalha com LLMs, RAG e sistemas de machine learning em produção. Escreve sobre IA aplicada no DevPulse.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="related-section">
+    <div class="section-header reveal">
+      <span class="section-title">// você também pode gostar</span>
+    </div>
+    <div class="related-grid">
+      <article class="post-card reveal" onclick="location.href='post-typescript-55.html'">
+        <div class="post-card-image">⚡</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--blue">TypeScript</span></div>
+          <h2 class="post-card-title">TypeScript 5.5: as features que importam</h2>
+          <p class="post-card-excerpt">Decorators estabilizados, inferência melhorada e muito mais no novo TypeScript.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">AM</div> Ana Mello</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">7 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-kubernetes-devs.html'">
+        <div class="post-card-image">🐳</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Kubernetes para devs</h2>
+          <p class="post-card-excerpt">Do zero ao primeiro deploy em produção sem precisar de uma semana de configuração.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">12 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-rust-backend.html'">
+        <div class="post-card-image">🦀</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Rust</span></div>
+          <h2 class="post-card-title">Rust no back-end em 2025</h2>
+          <p class="post-card-excerpt">Por que grandes empresas estão migrando partes críticas dos sistemas para Rust.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">8 min</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

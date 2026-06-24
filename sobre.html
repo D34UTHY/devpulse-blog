@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sobre o DevPulse — Tech & Programação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html" class="active">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <section class="about-hero">
+    <div class="about-eyebrow reveal">// sobre o devpulse</div>
+    <h1 class="about-title reveal">Conteúdo técnico feito por<br><em>devs que constroem coisas</em></h1>
+    <p class="about-lead reveal">O DevPulse nasceu da frustração com conteúdo tech raso e desatualizado. Somos uma equipe de engenheiros que escreve sobre o que usa de verdade — em produção, com código real, com os erros incluídos.</p>
+    <div class="about-stats reveal">
+      <div>
+        <span class="about-stat-num">142</span>
+        <span class="about-stat-label">artigos publicados</span>
+      </div>
+      <div>
+        <span class="about-stat-num">4.2k</span>
+        <span class="about-stat-label">inscritos na newsletter</span>
+      </div>
+      <div>
+        <span class="about-stat-num">38k</span>
+        <span class="about-stat-label">leitores por mês</span>
+      </div>
+      <div>
+        <span class="about-stat-num">3</span>
+        <span class="about-stat-label">anos publicando</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="about-content">
+    <div class="about-text reveal">
+      <h2>Por que o DevPulse existe?</h2>
+      <p>Em 2022, os três fundadores do DevPulse estavam cansados de ler artigos que copiavam a documentação oficial e chamavam isso de tutorial. A web tinha muito conteúdo introductório e quase nada para quem já sabia o básico e queria ir fundo.</p>
+      <p>A proposta foi simples: escrever o artigo que gostaríamos de ter encontrado. Com benchmark real, com o código que não funciona de primeira, com as decisões de arquitetura e os trade-offs honestos.</p>
+      <p>Três anos depois, o DevPulse publica 2 artigos por semana, tem uma newsletter com mais de 4 mil assinantes e recebe contribuições de engenheiros de empresas como Nubank, iFood, Cloudflare e VTEX.</p>
+    </div>
+
+    <div>
+      <div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)" class="reveal">// time editorial</div>
+      <div class="team-grid">
+        <div class="team-card reveal">
+          <div class="avatar-team av-blue">RN</div>
+          <div>
+            <div class="team-name">Rafael Nunes</div>
+            <div class="team-role">// co-founder · back-end</div>
+            <div class="team-bio">9 anos em sistemas distribuídos. Ex-Nubank, Ex-Cloudflare. Escreve sobre Rust, Go e arquitetura.</div>
+          </div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar-team av-green">AM</div>
+          <div>
+            <div class="team-name">Ana Mello</div>
+            <div class="team-role">// co-founder · front-end</div>
+            <div class="team-bio">Especialista em performance e acessibilidade. Contribuidora do ecossistema React.</div>
+          </div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar-team av-purple">LC</div>
+          <div>
+            <div class="team-name">Lucas Costa</div>
+            <div class="team-role">// co-founder · devops</div>
+            <div class="team-bio">SRE com foco em Kubernetes e observabilidade. Mantém projetos open-source de infraestrutura.</div>
+          </div>
+        </div>
+
+        <div class="team-card reveal">
+          <div class="avatar-team av-blue">PF</div>
+          <div>
+            <div class="team-name">Paula Freitas</div>
+            <div class="team-role">// autora convidada · segurança</div>
+            <div class="team-bio">Engenheira de segurança ofensiva. Trabalha com pentest e DevSecOps.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="values-section">
+    <h2 class="values-title reveal">O que guia o DevPulse</h2>
+    <div class="values-grid">
+      <div class="value-card reveal">
+        <div class="value-icon">🔬</div>
+        <h3>Precisão técnica</h3>
+        <p>Todo exemplo de código é testado. Todo benchmark tem metodologia. Não publicamos o que não conseguimos verificar.</p>
+      </div>
+      <div class="value-card reveal">
+        <div class="value-icon">🎯</div>
+        <h3>Profundidade real</h3>
+        <p>Pulamos o básico que está na documentação. Focamos nas partes que não estão: edge cases, trade-offs, falhas conhecidas.</p>
+      </div>
+      <div class="value-card reveal">
+        <div class="value-icon">🤝</div>
+        <h3>Honestidade</h3>
+        <p>Opinião é marcada como opinião. Parceria comercial é marcada como parceria. Sem conteúdo disfarçado.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="newsletter-section" id="newsletter">
+    <div class="newsletter-inner">
+      <div class="nl-eyebrow reveal">// newsletter</div>
+      <h2 class="nl-title reveal">Tecnologia que importa,<br>toda semana.</h2>
+      <p class="nl-desc reveal">Artigos técnicos, tutoriais práticos e as melhores ferramentas do ecossistema dev.</p>
+      <form class="nl-form reveal" onsubmit="return false">
+        <input type="email" class="nl-input" placeholder="seu@email.com">
+        <button type="submit" class="btn-nl">Quero receber →</button>
+      </form>
+      <p class="nl-privacy reveal">Sem spam. Cancele quando quiser.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/search.js"></script>
+</body>
+</html>

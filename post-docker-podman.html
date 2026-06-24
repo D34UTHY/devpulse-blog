@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docker vs Podman em 2025: qual usar no seu workflow? — DevPulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="shortcut icon" href="./favicon.png" type="image/x-icon">
+</head>
+<body>
+  <div class="reading-progress">
+    <div class="reading-progress-bar"></div>
+  </div>
+
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo"><span class="accent">dev</span>pulse<span class="dot">.</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="categoria.html">Categorias</a>
+      <a href="sobre.html">Sobre</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search-wrapper">
+        <input type="text" class="nav-search-input" placeholder="Buscar artigos...">
+        <div class="search-dropdown"></div>
+      </div>
+      <a href="index.html#newsletter" class="btn-subscribe">Inscrever-se</a>
+    </div>
+  </nav>
+
+  <header class="post-header reveal">
+    <div class="post-header-meta">
+      <span class="tag tag--green">DevOps</span>
+      <span class="tag tag--blue">Containers</span>
+      <span class="meta-dot">·</span>
+      <span class="read-time">5 min de leitura</span>
+    </div>
+
+    <h1 class="post-title">Docker vs Podman em 2025: qual usar no seu workflow?</h1>
+
+    <div class="post-author-bar">
+      <div class="avatar-md">LC</div>
+      <div class="author-bar-info">
+        <div class="author-bar-name">Lucas Costa</div>
+        <div class="author-bar-role">SRE &nbsp;·&nbsp; 5 de junho de 2025</div>
+      </div>
+      <div class="author-bar-stats">
+        <span>👁 3.5k views</span>
+        <span>💬 24 comentários</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="post-cover reveal">
+    <div class="post-cover-img">🐳</div>
+  </div>
+
+  <div class="post-layout">
+    <article class="post-body">
+      <p>Docker é onipresente. Mas desde 2021, Podman emergiu como alternativa Open Source com arquitetura mais segura — <strong>sem daemon único, roda sem root por padrão, compatível com Docker CLI</strong>. Em 2025, a questão não é mais "qual é melhor", mas "qual faz sentido pro seu caso".</p>
+
+      <p>Resposta curta: <strong>Docker pra desenvolvimento</strong>, <strong>Podman pra sistemas onde segurança importa</strong>. Mas vamos aos detalhes.</p>
+
+      <h2 id="arquitetura">Arquitetura: o maior diferencial</h2>
+
+      <p>Docker usa um daemon centralizado (<code>dockerd</code>) rodando como root. Todas as imagens, containers, volumes, e networking passam por esse único processo. É simples, mas é um ponto único de falha.</p>
+
+      <p>Podman é <em>daemon-less</em> e <em>rootless-first</em>. Cada usuário pode gerenciar seus próprios containers sem privilégios de root. A arquitetura é distribuída — cada instância do Podman gerencia seus próprios containers.</p>
+
+      <pre><code><span class="cm"># Docker: roda como root</span>
+sudo dockerd
+
+<span class="cm"># Podman: roda como user normal</span>
+podman run -d nginx
+<span class="lang-label">bash</span></code></pre>
+
+      <p><strong>Implicação de segurança</strong>: em Docker, escapar de um container significa root no host. Em Podman, você vira um usuário regular não-privilegiado.</p>
+
+      <h2 id="compatibilidade">Compatibilidade: Podman copia Docker</h2>
+
+      <p>Podman foi desenhado como drop-in replacement de Docker. Mesmos comandos, mesma sintaxe:</p>
+
+      <pre><code><span class="cm"># Funciona em ambos</span>
+podman build -t minha-app .
+podman run -p 8080:3000 minha-app
+podman push quay.io/seu-usuario/minha-app
+<span class="lang-label">bash</span></code></pre>
+
+      <p>A CLI é tão compatível que tem gente que usa <code>alias docker=podman</code>. Mas há diferenças:</p>
+
+      <ul>
+        <li><strong>Docker Compose</strong>: Docker tem integrado. Podman precisa de <code>podman-compose</code> (não é tão polido)</li>
+        <li><strong>BuildKit</strong>: Docker Buildkit é otimizado. Buildah (alternativa Podman) é bom, mas tem quirks</li>
+        <li><strong>Networking avançado</strong>: Docker tem múltiplas redes customizadas de forma elegante. Podman é mais básico</li>
+      </ul>
+
+      <h2 id="desempenho">Performance</h2>
+
+      <p>Em workloads normais, performance é similar. Mas há casos onde divergem:</p>
+
+      <p><strong>Docker vence em:</strong> networking complexo, multi-container com muitos volumes, build de imagens grandes (BuildKit é mais otimizado).</p>
+
+      <p><strong>Podman vence em:</strong> containers simples, rootless mode (menos overhead), sistemas embarcados/CI (cgroup v2, melhor isolamento).</p>
+
+      <p>Diferença real? 5-15% em casos específicos. Não é decisiva.</p>
+
+      <h2 id="devops">DevOps e infraestrutura</h2>
+
+      <p>Docker domina em sistemas existentes — Kubernetes usa Docker (ou containerd, que é similar). Migrando pra Podman em produção? Requer trabalho:</p>
+
+      <ul>
+        <li>Kubernetes com Podman requer <code>crictl</code> (CLI de baixo nível) — não é automático</li>
+        <li>Monitoramento/observabilidade: ferramentas Docker-nativas podem não funcionar igual</li>
+        <li>Talent pool: mais devs conhecem Docker que Podman</li>
+      </ul>
+
+      <p><strong>Onde Podman brilha em produção</strong>: CI/CD (GitHub Actions, GitLab CI), servidores que não usam Kubernetes, e sistemas embarcados com restrições de privilégio.</p>
+
+      <h2 id="quando-usar">Quando usar cada um</h2>
+
+      <p><strong>Use Docker se:</strong></p>
+
+      <ul>
+        <li>Você usa Kubernetes (Docker é padrão, menos atrito)</li>
+        <li>Trabalha em equipe grande (mais recursos, documentação, tutoriais)</li>
+        <li>Precisa de Docker Compose estável</li>
+        <li>Trabalha com múltiplos registries e networking avançado</li>
+      </ul>
+
+      <p><strong>Use Podman se:</strong></p>
+
+      <ul>
+        <li>Segurança de containers é crítica (rootless por padrão)</li>
+        <li>Roda em CI/CD (GitHub Actions prefere Podman por segurança)</li>
+        <li>Trabalha em ambiente embarcado / low-resource</li>
+        <li>Quer algo de verdade Open Source (CNCF, não corporate)</li>
+      </ul>
+
+      <h2 id="conclusao">Em 2025: convivência saudável</h2>
+
+      <p>Docker não vai desaparecer. Kubernetes não vai mudar de Docker pra Podman amanhã. Mas Podman cresceu e é uma verdadeira alternativa agora.</p>
+
+      <p>A tendência? Containerização sem daemon específico (OCI-compliant). Tanto Docker quanto Podman convergem pra esse padrão. A briga de ferramentas vai importar cada vez menos.</p>
+
+      <p>Minha recomendação: <strong>desenvolve localmente com o que preferir, mas testa no CI/CD com Podman antes de ir pra produção</strong>. Encontra incompatibilidades cedo.</p>
+    </article>
+
+    <aside>
+      <nav class="toc">
+        <div class="toc-title">Neste artigo</div>
+        <ul class="toc-list">
+          <li><a href="#arquitetura">Arquitetura</a></li>
+          <li><a href="#compatibilidade">Compatibilidade</a></li>
+          <li><a href="#desempenho">Performance</a></li>
+          <li><a href="#devops">DevOps e infraestrutura</a></li>
+          <li><a href="#quando-usar">Quando usar cada um</a></li>
+          <li><a href="#conclusao">Conclusão</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
+
+  <div class="post-footer">
+    <div class="post-tags">
+      <span class="tag tag--green">DevOps</span>
+      <span class="tag tag--blue">Containers</span>
+      <span class="tag tag--orange">Infraestrutura</span>
+      <span class="tag tag--green">Docker</span>
+    </div>
+
+    <div class="post-share">
+      <span class="share-label">Compartilhar</span>
+      <div class="share-btns">
+        <button class="share-btn">𝕏 Twitter</button>
+        <button class="share-btn">in LinkedIn</button>
+        <button class="share-btn">🔗 Copiar link</button>
+      </div>
+    </div>
+
+    <div class="author-card reveal">
+      <div class="avatar-lg">LC</div>
+      <div>
+        <div class="author-card-name">Lucas Costa</div>
+        <div class="author-card-role">// site-reliability-engineer</div>
+        <p class="author-card-bio">SRE com experiência em containerização, Kubernetes e arquitetura cloud-native. Trabalha com DevOps em escala e escreve sobre ferramentas modernas de infraestrutura no DevPulse.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="related-section">
+    <div class="section-header reveal">
+      <span class="section-title">// você também pode gostar</span>
+    </div>
+    <div class="related-grid">
+      <article class="post-card reveal" onclick="location.href='post-kubernetes-devs.html'">
+        <div class="post-card-image">☸️</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--green">DevOps</span></div>
+          <h2 class="post-card-title">Kubernetes para devs</h2>
+          <p class="post-card-excerpt">Do zero ao primeiro deploy em produção sem precisar de uma semana de configuração.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">LC</div> Lucas Costa</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">12 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-rust-backend.html'">
+        <div class="post-card-image">🦀</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Rust</span></div>
+          <h2 class="post-card-title">Rust no back-end em 2025</h2>
+          <p class="post-card-excerpt">Por que grandes empresas estão migrando partes críticas dos sistemas para Rust.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">8 min</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="post-card reveal" onclick="location.href='post-jwt-autenticacao.html'">
+        <div class="post-card-image">🔐</div>
+        <div class="post-card-body">
+          <div class="post-card-tags"><span class="tag tag--orange">Segurança</span></div>
+          <h2 class="post-card-title">JWT não é suficiente</h2>
+          <p class="post-card-excerpt">Como implementar autenticação de verdade com refresh tokens e rotação segura.</p>
+          <div class="post-card-footer">
+            <div class="meta-author"><div class="avatar-sm">RN</div> Rafael Nunes</div>
+            <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-dim)">10 min</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand-name"><span class="accent">dev</span>pulse.</div>
+        <p class="footer-tagline">Conteúdo técnico de qualidade para desenvolvedores que querem crescer de verdade.</p>
+        <div class="footer-socials">
+          <a href="#" class="social-btn">𝕏</a>
+          <a href="#" class="social-btn">⌥</a>
+          <a href="#" class="social-btn">in</a>
+          <a href="#" class="social-btn">◉</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Conteúdo</h4>
+        <ul>
+          <li><a href="categoria.html">Categorias</a></li>
+          <li><a href="index.html#newsletter">Newsletter</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="sobre.html">Sobre nós</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnologias</h4>
+        <ul>
+          <li><a href="#">TypeScript</a></li>
+          <li><a href="#">DevOps</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DevPulse. Feito com ☕ e muito terminal aberto.</span>
+      <div class="footer-bottom-links">
+        <a href="#">Privacidade</a>
+        <a href="#">Termos</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
