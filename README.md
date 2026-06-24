@@ -2,11 +2,7 @@
 
 # DevPulse — Dark Editorial Tech Blog
 
-Um blog técnico dark themed com design editorial moderno, construído com **vanilla HTML, CSS e JavaScript**. Perfeito para portfolio de desenvolvimento front-end.
-
-# DevPulse — Dark Editorial Tech Blog
-
-Blog técnico com design minimalista e moderno, construído com vanilla HTML/CSS/JS. Ideal para portfolio front-end.
+Blog técnico com design minimalista e moderno, construído com vanilla HTML/CSS/JS.
 
 **Features:** busca em tempo real, filtro por categorias, 6 artigos completos, dark theme editorial, fully responsive, zero dependências.
 
